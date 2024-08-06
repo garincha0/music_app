@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Что где когда озвучка</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="images/icons8-сова-64.png" type="image/png">
+    <link rel="shortcut icon" href="images/icons8-сова-64.png" type="image/png">
+</head>
+<div class="header">
+    <button title="Отключает любой звук" class="pause" onclick="stopMusic()">||</button> 
+    <button class="gong" onclick="playMusic('gong-1.mp3')">Гонг</button>
+    <p class='score' id="score_table">Телезрители : 0  Знатоки : 0</p>
+</div>
+<body>
+    <h2>Начало игры<h3>
+    <button class="button_default" onclick="playMusic('chto-gde-kogda-2013-nastojaschee-vremja.mp3')">Заставка жизнь игра</button>
+    <button class="button_default" onclick="playMusic('meeting.mp3')">Начало игры</button> <br />    
+    
+    <h2>Процесс игры<h3>
+    <button class="button_default" onclick="playMusic('melody1.mp3')">Волчок</button> <br />
+    <p>говоришь: Вопрос от телезрителя из города <...></p>
+    <button class="button_default" onclick="playMusic('gong-1.mp3')">Гонг</button> <br />
+    <p>говоришь: "Внимание вопрос", - и читаешь вопрос</p>
+    <p class = 'timer_custom' onclick="startTimer(timeLeft=60)" id="time-left">|> Таймер 60</p>
+    <p class = 'timer_custom' onclick="startTimer(timeLeft=20)" id="time-left">|> Таймер 20 (блиц)</p>
+    <audio id="alarm-sound" src="{{ url_for('static', filename='music/alarm.mp3') }}" preload="auto"></audio>
+    <audio id="alarm-sound_10" src="{{ url_for('static', filename='music/alarm_10.mp3') }}" preload="auto"></audio>
+    <audio id="alarm-sound_0" src="{{ url_for('static', filename='music/alarm_0.mp3') }}" preload="auto"></audio>
+
+    <p>Просишь капитана назначить отвечающего</p>
+    <button class="button_default" onclick="playMusic('gong-1.mp3')">Гонг</button> <br />
+    <p> Зачитываешь правильный ответ и называешь счет</p>
+    <button class="button_green" onclick="playMusic(melody='chgk2_yes', maxInt=3); setScore(user='znatoki')">Правильный</button>
+    <button class="button_red" onclick="playMusic(melody='chgk2_no', maxInt=3); setScore(user='telezriteli')">Неправильный</button><br />
+
+    <h2>Конец игры<h3>
+    <p> Автоматически включается музыка конца игры, если какая-то из команд набиарет 6 очков</p>
+    <!-- <button class="button_default" onclick="playMusic('melody2.mp3')">Конец игры</button> -->
+    
+    <script>
+        function playMusic(melody, maxInt = '') {
+            randIntAnswer = getRandomInt(maxInt);
+
+            if (maxInt != '') {
+                melody = melody.split('.')[0] + randIntAnswer + '.mp3';
+            }
+            console.log(melody);
+
+            fetch('/play', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'melody=' + melody
+            });
+
+        }
+
+        function stopMusic() {
+            fetch('/stop', {
+                method: 'POST'
+            });
+        }
+
+        let timer;
+        let timeLeft = 0;
+        let alarSoundName = 'alarm-sound'
+
+        function startTimer(timeLeft) {
+            clearInterval(timer);
+            
+            document.getElementById('time-left').innerText = `Осталось: ${timeLeft} секунд`;
+
+            playSound(alarSoundName='alarm-sound_0');
+        
+            timer = setInterval(function() {
+                timeLeft--;
+                document.getElementById('time-left').innerText = `Осталось: ${timeLeft} секунд`;
+
+                if (timeLeft == 10) {
+                    playSound(alarSoundName='alarm-sound_10');
+                }
+        
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    playSound(playSound(alarSoundName='alarm-sound'));
+                    document.getElementById('time-left').innerText = `|> Таймер 60`;
+                }
+            }, 1000);
+
+            
+        }
+
+        let telezriteli = 0;
+        let znatoki = 0;
+
+        function setScore(user) {
+            if (user == 'telezriteli'){
+                telezriteli ++;
+            }
+            if (user == 'znatoki'){
+                znatoki ++;
+            }
+            document.getElementById('score_table').innerText = 'Телезрители : ' + telezriteli + ' Знатоки : '+ znatoki;
+
+            if (telezriteli == 6 || znatoki == 6) {
+                playMusic('melody2.mp3')
+            }
+
+        }
+        
+        function playSound(alarSoundName) {
+            fetch('/play_sound')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(alarSoundName).play();
+                    }
+                });
+        }
+
+        function getRandomInt(maxInt) {
+            let randInt = 0;
+            randInt = Math.floor(Math.random() * maxInt);
+            return randInt
+          }
+          
+    </script>
+</body>
+</html>
