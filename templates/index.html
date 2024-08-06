@@ -37,96 +37,9 @@
 
     <h2>Конец игры<h3>
     <p> Автоматически включается музыка конца игры, если какая-то из команд набиарет 6 очков</p>
-    <!-- <button class="button_default" onclick="playMusic('melody2.mp3')">Конец игры</button> -->
-    
-    <script>
-        function playMusic(melody, maxInt = '') {
-            randIntAnswer = getRandomInt(maxInt);
+    <button class="button_default" onclick="playMusic('melody2.mp3'); windOpen()">Конец игры</button>
 
-            if (maxInt != '') {
-                melody = melody.split('.')[0] + randIntAnswer + '.mp3';
-            }
-            console.log(melody);
+    <script src="/static/script.js"></script>
 
-            fetch('/play', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'melody=' + melody
-            });
-
-        }
-
-        function stopMusic() {
-            fetch('/stop', {
-                method: 'POST'
-            });
-        }
-
-        let timer;
-        let timeLeft = 0;
-        let alarSoundName = 'alarm-sound'
-
-        function startTimer(timeLeft) {
-            clearInterval(timer);
-            
-            document.getElementById('time-left').innerText = `Осталось: ${timeLeft} секунд`;
-
-            playSound(alarSoundName='alarm-sound_0');
-        
-            timer = setInterval(function() {
-                timeLeft--;
-                document.getElementById('time-left').innerText = `Осталось: ${timeLeft} секунд`;
-
-                if (timeLeft == 10) {
-                    playSound(alarSoundName='alarm-sound_10');
-                }
-        
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    playSound(playSound(alarSoundName='alarm-sound'));
-                    document.getElementById('time-left').innerText = `|> Таймер 60`;
-                }
-            }, 1000);
-
-            
-        }
-
-        let telezriteli = 0;
-        let znatoki = 0;
-
-        function setScore(user) {
-            if (user == 'telezriteli'){
-                telezriteli ++;
-            }
-            if (user == 'znatoki'){
-                znatoki ++;
-            }
-            document.getElementById('score_table').innerText = 'Телезрители : ' + telezriteli + ' Знатоки : '+ znatoki;
-
-            if (telezriteli == 6 || znatoki == 6) {
-                playMusic('melody2.mp3')
-            }
-
-        }
-        
-        function playSound(alarSoundName) {
-            fetch('/play_sound')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById(alarSoundName).play();
-                    }
-                });
-        }
-
-        function getRandomInt(maxInt) {
-            let randInt = 0;
-            randInt = Math.floor(Math.random() * maxInt);
-            return randInt
-          }
-          
-    </script>
 </body>
 </html>
