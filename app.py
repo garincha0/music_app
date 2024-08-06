@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import pygame
 import os
+import webbrowser
 
 app = Flask(__name__)
 
@@ -33,6 +34,8 @@ def stop():
 @app.route('/play_sound')
 def play_sound():
     return jsonify(success=True)
+
+webbrowser.open("http://127.0.0.1:5000/")
 
 if __name__ == '__main__':
     app.run(debug=True)
